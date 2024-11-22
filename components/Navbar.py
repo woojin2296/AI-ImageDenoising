@@ -57,6 +57,8 @@ class Navbar(tk.Frame):
         menuFrame.bind("<Enter>", lambda e: (menuFrame.config(bg="#33363A"), icon_label.config(bg="#33363A"), text_label.config(bg="#33363A")))
         menuFrame.bind("<Leave>", lambda e: (menuFrame.config(bg=self.bg), icon_label.config(bg=self.bg), text_label.config(bg=self.bg)))
         menuFrame.bind("<Button-1>", lambda e: command())
+        icon_label.bind("<Button-1>", lambda e: command())
+        text_label.bind("<Button-1>", lambda e: command())
 
     def setFooter(self, row, column):
         footer = tk.Label(self, text="© 2021 Memory Mender", fg="white", bg=self.bg, font=("Helvetica, 10"))

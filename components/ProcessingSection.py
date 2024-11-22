@@ -19,6 +19,11 @@ class ProcessingSection(tk.Frame):
         image_section.grid_rowconfigure(0, weight=1)
         image_section.grid_columnconfigure(0, weight=1)
 
+        self.add_icon = Image.open("assets/circle-plus-white.png")
+        self.add_icon = ImageTk.PhotoImage(self.add_icon)
+        add_icon_label = tk.Label(image_section, image=self.add_icon, bg="#26282A")
+        add_icon_label.grid(row=0, column=0, sticky="nsew")
+
         image_section.bind("<Enter>", lambda e: (
             image_section.config(bg="#33363A"),
             add_icon_label.config(bg="#33363A"),
@@ -29,14 +34,9 @@ class ProcessingSection(tk.Frame):
             add_icon_label.config(bg="#26282A"),
             add_icon_label.config(bg="#26282A")
         ))
-        image_section.bind("<Button-1>", lambda e: (
+        add_icon_label.bind("<Button-1>", lambda e: (
             self.upload_image()
         ))
-
-        self.add_icon = Image.open("assets/circle-plus-white.png")
-        self.add_icon = ImageTk.PhotoImage(self.add_icon)
-        add_icon_label = tk.Label(image_section, image=self.add_icon, bg="#26282A")
-        add_icon_label.grid(row=0, column=0, sticky="nsew")
 
 
 

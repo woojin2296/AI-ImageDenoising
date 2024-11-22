@@ -10,7 +10,7 @@ class HistorySection(tk.Frame):
 
         tk.Frame.__init__(self, root, bg=self.bg, height=self.height, width=self.width)
         self.grid_propagate(False)
-        self.grid(row=0, column=0, ipadx=20, ipady=10)
+        self.grid(row=0, column=0, ipadx=20)
 
         self.page = 0
         self.images = []
