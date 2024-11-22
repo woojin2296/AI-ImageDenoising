@@ -39,5 +39,3 @@ class HistorySection(tk.Frame):
         card = tk.Frame(self, width=250, height=200, bg="#26282A")
         card.grid(row=index // 3, column=index % 3, padx=10, pady=10)
 
-        #image = self.images.subsample()
-
