@@ -1,4 +1,5 @@
 import tkinter as tk
+from PIL import Image, ImageTk
 
 class Navbar(tk.Frame):
     def __init__(self, root, switch_section_callback):
@@ -10,12 +11,9 @@ class Navbar(tk.Frame):
         self.grid_propagate(False)
         self.grid(row=0, column=0)
 
-        # 섹션 전환 콜백 함수 저장
         self.switch_section_callback = switch_section_callback
 
-        # Navbar 내부 레이아웃 설정
-        self.rowconfigure(40, weight=1)  # Footer를 맨 아래로 밀어내기 위해 마지막 행에 weight 설정
-        self.columnconfigure(0, weight=1)  # Footer를 수평 중앙에 위치하도록 설정
+        self.rowconfigure(40, weight=1)
 
         self.initUI()
 
@@ -24,32 +22,42 @@ class Navbar(tk.Frame):
 
         self.setSeparator(9, 0, 250, 1)
 
-        # Home 버튼: ProcessingSection으로 전환
-        self.setMenu(15, 0, None, "Home", lambda: self.switch_section_callback("Processing"))
+        self.houseIcon = Image.open("./assets/house-white.png")
+        self.houseIcon = ImageTk.PhotoImage(self.houseIcon)
+        self.setMenu(15, 0, self.houseIcon, "Home", lambda: self.switch_section_callback("Processing"))
 
-        self.setSeparator(19, 0, 250, 1)
-
-        # History 버튼: HistorySection으로 전환
-        self.setMenu(25, 0, None, "History", lambda: self.switch_section_callback("History"))
-
-        self.setSeparator(29, 0, 250, 1)
+        self.listIcon = Image.open("./assets/list-white.png")
+        self.listIcon = ImageTk.PhotoImage(self.listIcon)
+        self.setMenu(25, 0, self.listIcon, "History", lambda: self.switch_section_callback("History"))
 
         self.setSeparator(41, 0, 250, 1)
+
         self.setFooter(45, 0)
 
     def setLogo(self, row, column):
-        self.logo = tk.Label(self, text="Memory Mender", fg="white", bg=self.bg, font=("Helvetica, 20"))
-        self.logo.grid(row=row, column=column, sticky="w", padx=20, pady=20)
+        logo = tk.Label(self, text="Memory Mender", fg="white", bg=self.bg, font=("Helvetica, 24"))
+        logo.grid(row=row, column=column, sticky="w", padx=20, pady=20)
 
     def setSeparator(self, row, column, width, height):
-        self.separator = tk.Frame(self, bg="#ffffff", width=width, height=height)
-        self.separator.grid(row=row, column=column)
+        separator = tk.Frame(self, bg="#ffffff", width=width, height=height)
+        separator.grid(row=row, column=column)
 
     def setMenu(self, row, column, icon, text, command):
-        self.menuSection = tk.Button(self, bg=self.bg, fg="white", text=text, font=("Helvetica, 12"), command=command)
-        self.menuSection.grid_propagate(False)
-        self.menuSection.grid(row=row, column=column, sticky="w", padx=20, pady=20)
+        menuFrame = tk.Frame(self, bg=self.bg, height=60, width=250)
+        menuFrame.grid_propagate(False)
+        menuFrame.grid(row=row, column=column)
+        menuFrame.grid_rowconfigure(0, weight=1)
+
+        icon_label = tk.Label(menuFrame, image=icon, bg=self.bg)
+        icon_label.grid(row=0, column=0, padx=20, sticky="w")
+
+        text_label = tk.Label(menuFrame, text=text, fg="white", bg=self.bg, font=("Helvetica, 16"))
+        text_label.grid(row=0, column=1, sticky="w")
+
+        menuFrame.bind("<Enter>", lambda e: (menuFrame.config(bg="#33363A"), icon_label.config(bg="#33363A"), text_label.config(bg="#33363A")))
+        menuFrame.bind("<Leave>", lambda e: (menuFrame.config(bg=self.bg), icon_label.config(bg=self.bg), text_label.config(bg=self.bg)))
+        menuFrame.bind("<Button-1>", lambda e: command())
 
     def setFooter(self, row, column):
-        self.footer = tk.Label(self, text="© 2021 Memory Mender", fg="white", bg=self.bg, font=("Helvetica, 10"))
-        self.footer.grid(row=row, column=column, sticky="s", padx=20, pady=20)
+        footer = tk.Label(self, text="© 2021 Memory Mender", fg="white", bg=self.bg, font=("Helvetica, 10"))
+        footer.grid(row=row, column=column, sticky="s", padx=20, pady=20)
