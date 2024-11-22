@@ -1,6 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import filedialog
+from datetime import datetime
 
 
 class ProcessingSection(tk.Frame):
@@ -45,17 +46,26 @@ class ProcessingSection(tk.Frame):
         self.interface_Section.grid(row=1, column=0, padx=10)
 
     def upload_image(self):
-        print("test")
         file_path = tk.filedialog.askopenfilename(
             filetypes=[("Image files", "*.jpg *.jpeg *.png")],
         )
-        print("end")
-
         if file_path:
             self.uploaded_image = Image.open(file_path)
+            self.save_img(file_path, self.uploaded_image)
+
+            if (self.uploaded_image.width > self.uploaded_image.height):
+                self.uploaded_image = self.uploaded_image.resize((810, int(500 / (self.uploaded_image.width / self.uploaded_image.height))))
+            else:
+                self.uploaded_image = self.uploaded_image.resize((int(810 * (self.uploaded_image.width / self.uploaded_image.height)), 500))
+
             self.uploaded_image = ImageTk.PhotoImage(self.uploaded_image)
+
             image_label = tk.Label(self, image=self.uploaded_image)
             image_label.grid(row=0, column=0)
+
+    def save_img(self, path, img):
+        type = path.split(".")[-1]
+        img.save(f"image/original/{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.{type}")
 
         # # 이미지 로드
         # self.before_image = Image.open("image/img1.jpg")
