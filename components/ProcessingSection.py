@@ -3,6 +3,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import filedialog
 from datetime import datetime
+import numpy as np
 
 from keras.src.utils import save_img
 
@@ -12,6 +13,8 @@ from utils import utils_image as util
 
 class ProcessingSection(tk.Frame):
     def __init__(self, root):
+        self.image_label = None
+        self.file_path = None
         self.uploaded_image = None
         self.height = 606
         self.width = 830
@@ -53,31 +56,39 @@ class ProcessingSection(tk.Frame):
 
         convert_button_img = Image.open("assets/convert_btn.png").resize((140, 40))
         convert_button_img = ImageTk.PhotoImage(convert_button_img)
-        self.convert_btn = tk.Button(self.interface_Section, image=convert_button_img)
+        self.convert_btn = tk.Label(self.interface_Section, image=convert_button_img, bg="#26282A")
         self.convert_btn.grid(row=0, column=0, sticky="nsew")
 
+        self.convert_btn.bind("<Button-1>", lambda e: (
+            self.__convert_button_pressed()
+        ))
+
+    def __convert_button_pressed(self):
+        self.converted_image = Image.fromarray(generate_denoise_image(self.file_path))
+        self.converted_image = self.__resize_image(self.converted_image)
+        self.converted_image = ImageTk.PhotoImage(self.converted_image)
+        self.image_label.config(image=self.converted_image)
+
+    def __resize_image(self, image: Image, max_len = 400):
+        x, y = image.size
+        image = image.resize(
+            (max_len, int(max_len * y / x)) if x > y else (int(max_len * x / y), max_len))
+        return image
+
     def upload_image(self):
-        file_path = tk.filedialog.askopenfilename(
+        self.file_path = tk.filedialog.askopenfilename(
             filetypes=[("Image files", "*.jpg *.jpeg *.png")],
         )
-        if file_path:
-            self.uploaded_image = Image.open(file_path)
-            self.save_img(file_path, self.uploaded_image)
+        if self.file_path:
+            self.uploaded_image = Image.open(self.file_path)
+            self.save_img(self.file_path, self.uploaded_image)
 
-            max_len = 400
-            x, y = self.uploaded_image.size
-
-            self.uploaded_image = self.uploaded_image.resize((max_len,int(max_len * y / x)) if x > y else (int(max_len * x / y), max_len))
-
+            self.uploaded_image = self.__resize_image(self.uploaded_image)
 
             self.uploaded_image = ImageTk.PhotoImage(self.uploaded_image)
 
-            image_label = tk.Label(self, image=self.uploaded_image)
-            image_label.grid(row=0, column=0)
-
-            # test
-            img_name, ext = os.path.splitext(os.path.basename(file_path))
-            util.imsave(generate_denoise_image(file_path), f'image/result/{img_name}_denoised.{ext}')
+            self.image_label = tk.Label(self, image=self.uploaded_image)
+            self.image_label.grid(row=0, column=0)
 
     def save_img(self, path, img):
         type = path.split(".")[-1]
