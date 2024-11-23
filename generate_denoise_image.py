@@ -64,5 +64,5 @@ def generate_denoise_image(path, noise_level_img=50):
 #     img_name, ext = os.path.splitext(os.path.basename(image_path))
 #     util.imsave(image, os.path.join(os.path.dirname(image_path), img_name+'_ffdnet'+ext))
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

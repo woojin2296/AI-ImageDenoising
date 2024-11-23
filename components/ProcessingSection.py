@@ -1,11 +1,18 @@
+import os.path
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import filedialog
 from datetime import datetime
 
+from keras.src.utils import save_img
+
+from generate_denoise_image import generate_denoise_image
+from utils import utils_image as util
+
 
 class ProcessingSection(tk.Frame):
     def __init__(self, root):
+        self.uploaded_image = None
         self.height = 606
         self.width = 830
         self.bg = "#000000"
@@ -39,11 +46,15 @@ class ProcessingSection(tk.Frame):
             self.upload_image()
         ))
 
-
-
         # 인터페이스 섹션
         self.interface_Section = tk.Frame(self, bg="#26282A", height=76, width=810)
+        self.interface_Section.grid_propagate(False)
         self.interface_Section.grid(row=1, column=0, padx=10)
+
+        convert_button_img = Image.open("assets/convert_btn.png").resize((140, 40))
+        convert_button_img = ImageTk.PhotoImage(convert_button_img)
+        self.convert_btn = tk.Button(self.interface_Section, image=convert_button_img)
+        self.convert_btn.grid(row=0, column=0, sticky="nsew")
 
     def upload_image(self):
         file_path = tk.filedialog.askopenfilename(
@@ -53,15 +64,20 @@ class ProcessingSection(tk.Frame):
             self.uploaded_image = Image.open(file_path)
             self.save_img(file_path, self.uploaded_image)
 
-            if (self.uploaded_image.width > self.uploaded_image.height):
-                self.uploaded_image = self.uploaded_image.resize((810, int(500 / (self.uploaded_image.width / self.uploaded_image.height))))
-            else:
-                self.uploaded_image = self.uploaded_image.resize((int(810 * (self.uploaded_image.width / self.uploaded_image.height)), 500))
+            max_len = 400
+            x, y = self.uploaded_image.size
+
+            self.uploaded_image = self.uploaded_image.resize((max_len,int(max_len * y / x)) if x > y else (int(max_len * x / y), max_len))
+
 
             self.uploaded_image = ImageTk.PhotoImage(self.uploaded_image)
 
             image_label = tk.Label(self, image=self.uploaded_image)
             image_label.grid(row=0, column=0)
+
+            # test
+            img_name, ext = os.path.splitext(os.path.basename(file_path))
+            util.imsave(generate_denoise_image(file_path), f'image/result/{img_name}_denoised.{ext}')
 
     def save_img(self, path, img):
         type = path.split(".")[-1]
@@ -80,7 +96,3 @@ class ProcessingSection(tk.Frame):
         # self.after_image = ImageTk.PhotoImage(self.after_image)
         #
         # self.image_label = tk.Label(self, image=self.before_image)
-
-
-
-

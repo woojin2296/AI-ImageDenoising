@@ -5,7 +5,7 @@ class Application(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title("Memory Mender")
-        self.geometry("1080x606-1920-600")
+        self.geometry("1080x606")
 
         # 현재 표시 중인 섹션 저장
         self.current_section = None
