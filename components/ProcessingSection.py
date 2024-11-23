@@ -1,18 +1,14 @@
-import os.path
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import filedialog
 from datetime import datetime
-import numpy as np
-
-from keras.src.utils import save_img
-
 from generate_denoise_image import generate_denoise_image
 from utils import utils_image as util
 
 
 class ProcessingSection(tk.Frame):
     def __init__(self, root):
+        self.upload_time = None
         self.image_label = None
         self.file_path = None
         self.uploaded_image = None
@@ -55,8 +51,9 @@ class ProcessingSection(tk.Frame):
         self.interface_Section.grid(row=1, column=0, padx=10)
 
         convert_button_img = Image.open("assets/convert_btn.png").resize((140, 40))
-        convert_button_img = ImageTk.PhotoImage(convert_button_img)
+        convert_button_img = ImageTk.PhotoImage(image=convert_button_img)
         self.convert_btn = tk.Label(self.interface_Section, image=convert_button_img, bg="#26282A")
+        self.convert_btn.image = convert_button_img # garbage collection 방지
         self.convert_btn.grid(row=0, column=0, sticky="nsew")
 
         self.convert_btn.bind("<Button-1>", lambda e: (
@@ -65,6 +62,10 @@ class ProcessingSection(tk.Frame):
 
     def __convert_button_pressed(self):
         self.converted_image = Image.fromarray(generate_denoise_image(self.file_path))
+
+        image_name, ext = self.file_path.split("/")[-1].split(".")
+        self.converted_image.save(f'image/result/{image_name}-{self.upload_time}.{ext}')
+
         self.converted_image = self.__resize_image(self.converted_image)
         self.converted_image = ImageTk.PhotoImage(self.converted_image)
         self.image_label.config(image=self.converted_image)
@@ -80,8 +81,12 @@ class ProcessingSection(tk.Frame):
             filetypes=[("Image files", "*.jpg *.jpeg *.png")],
         )
         if self.file_path:
+            self.upload_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
             self.uploaded_image = Image.open(self.file_path)
-            self.save_img(self.file_path, self.uploaded_image)
+
+            image_name, ext = self.file_path.split("/")[-1].split(".")
+            self.save_img(f'image/original/{image_name}-{self.upload_time}.{ext}', self.uploaded_image)
 
             self.uploaded_image = self.__resize_image(self.uploaded_image)
 
@@ -91,8 +96,7 @@ class ProcessingSection(tk.Frame):
             self.image_label.grid(row=0, column=0)
 
     def save_img(self, path, img):
-        type = path.split(".")[-1]
-        img.save(f"image/original/{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.{type}")
+        img.save(path)
 
         # # 이미지 로드
         # self.before_image = Image.open("image/img1.jpg")
