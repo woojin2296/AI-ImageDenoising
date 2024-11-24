@@ -2,112 +2,131 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import filedialog
 from datetime import datetime
+
 from generate_denoise_image import generate_denoise_image
-from utils import utils_image as util
 
 
 class ProcessingSection(tk.Frame):
     def __init__(self, root):
-        self.upload_time = None
-        self.image_label = None
-        self.file_path = None
-        self.uploaded_image = None
         self.height = 606
         self.width = 830
         self.bg = "#000000"
+
+        self.title_section_height = 40
+        self.title_section_width = self.width - 20
+        self.title_section_bg = self.bg
+
+        self.image_section_height = 470
+        self.image_section_width = self.width - 20
+        self.image_section_bg = "#26282A"
+        self.image_section_bg_hover = "#33363A"
+
+        self.interface_Section_height = 76
+        self.interface_Section_width = self.width - 20
+        self.interface_Section_bg = "#26282A"
 
         tk.Frame.__init__(self, root, bg=self.bg, height=self.height, width=self.width)
         self.grid_propagate(False)
         self.grid(row=0, column=0)
 
-        image_section = tk.Frame(self, bg="#26282A", height=500, width=810)
+        self.initUI()
+
+    def initUI(self):
+        self.title_section().grid(row=0, column=0, padx=10)
+        self.image_section().grid(row=1, column=0, padx=10)
+        self.padding_section().grid(row=2, column=0)
+        self.interface_section().grid(row=3, column=0, padx=10)
+
+    def padding_section(self):
+        return tk.Frame(self, bg=self.bg, height=10, width=self.width)
+
+    def title_section(self):
+        title_section = tk.Frame(self, bg=self.title_section_bg, height=self.title_section_height, width=self.title_section_width)
+        title_section.grid_propagate(False)
+        title_section.grid_rowconfigure(0, weight=1)
+        title_section.grid_columnconfigure(0, weight=1)
+
+        title_label = tk.Label(title_section, text="Upload Image", fg="white", bg=self.title_section_bg, font=("Helvetica, 18"))
+        title_label.grid(row=0, column=0, sticky="nsw")
+
+        return title_section
+
+    def image_section(self):
+        image_section = tk.Frame(self, bg=self.image_section_bg, height=self.image_section_height, width=self.image_section_width)
         image_section.grid_propagate(False)
-        image_section.grid(row=0, column=0, padx=10, pady=10)
         image_section.grid_rowconfigure(0, weight=1)
         image_section.grid_columnconfigure(0, weight=1)
 
         self.add_icon = Image.open("assets/circle-plus-white.png")
         self.add_icon = ImageTk.PhotoImage(self.add_icon)
-        add_icon_label = tk.Label(image_section, image=self.add_icon, bg="#26282A")
-        add_icon_label.grid(row=0, column=0, sticky="nsew")
 
-        image_section.bind("<Enter>", lambda e: (
-            image_section.config(bg="#33363A"),
-            add_icon_label.config(bg="#33363A"),
-            add_icon_label.config(bg="#33363A")
-        ))
-        image_section.bind("<Leave>", lambda e: (
-            image_section.config(bg="#26282A"),
-            add_icon_label.config(bg="#26282A"),
-            add_icon_label.config(bg="#26282A")
-        ))
-        add_icon_label.bind("<Button-1>", lambda e: (
-            self.upload_image()
-        ))
+        self.image_placeholder = tk.Label(image_section, image=self.add_icon, bg=self.image_section_bg)
+        self.image_placeholder.grid(row=0, column=0, sticky="nsew")
 
-        # 인터페이스 섹션
-        self.interface_Section = tk.Frame(self, bg="#26282A", height=76, width=810)
+        self.image_placeholder.bind("<Enter>", lambda e: self.image_placeholder.config(bg=self.image_section_bg_hover))
+        self.image_placeholder.bind("<Leave>", lambda e: self.image_placeholder.config(bg=self.image_section_bg))
+        self.image_placeholder.bind("<Button-1>", lambda e: self.upload_image())
+
+        return image_section
+
+    def upload_image(self):
+        self.file_path = tk.filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png")])
+
+        if self.file_path:
+            self.original_image = Image.open(self.file_path)
+            self.img_name = f'{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.{self.file_path.split(".")[-1]}'
+
+            self.display_image = self.__resize_image(self.original_image)
+            self.display_image = ImageTk.PhotoImage(self.display_image)
+            self.image_placeholder.config(image=self.display_image)
+
+    def __resize_image(self, image: Image):
+        x, y = image.size
+        if x < y:
+            image = image.resize((self.image_section_width, int(self.image_section_width * y / x)))
+        else:
+            image = image.resize((int(self.image_section_height * x / y), self.image_section_height))
+        return image
+
+    def interface_section(self):
+        self.interface_Section = tk.Frame(self, bg=self.interface_Section_bg, height=self.interface_Section_height, width=self.interface_Section_width)
         self.interface_Section.grid_propagate(False)
-        self.interface_Section.grid(row=1, column=0, padx=10)
+        self.interface_Section.grid(row=2, column=0, padx=10)
+        self.interface_Section.grid_rowconfigure(0, weight=1)
 
         convert_button_img = Image.open("assets/convert_btn.png").resize((140, 40))
         convert_button_img = ImageTk.PhotoImage(image=convert_button_img)
-        self.convert_btn = tk.Label(self.interface_Section, image=convert_button_img, bg="#26282A")
-        self.convert_btn.image = convert_button_img # garbage collection 방지
-        self.convert_btn.grid(row=0, column=0, sticky="nsew")
+        convert_btn = tk.Label(self.interface_Section, image=convert_button_img, bg="#26282A")
+        convert_btn.image = convert_button_img
+        convert_btn.grid(row=0, column=0, sticky="nsew")
 
-        self.convert_btn.bind("<Button-1>", lambda e: (
+        download_button_img = Image.open("assets/download_btn.png").resize((140, 40))
+        download_button_img = ImageTk.PhotoImage(image=download_button_img)
+        download_btn = tk.Label(self.interface_Section, image=download_button_img, bg="#26282A")
+        download_btn.image = download_button_img
+        download_btn.grid(row=0, column=1, sticky="nsew")
+
+        convert_btn.bind("<Button-1>", lambda e: (
             self.__convert_button_pressed()
         ))
+
+        download_btn.bind("<Button-1>", lambda e: (
+            self.__download_button_pressed()
+        ))
+
+        return self.interface_Section
 
     def __convert_button_pressed(self):
         self.converted_image = Image.fromarray(generate_denoise_image(self.file_path))
 
-        image_name, ext = self.file_path.split("/")[-1].split(".")
-        self.converted_image.save(f'image/result/{image_name}-{self.upload_time}.{ext}')
+        self.original_image.save(f'image/original/{self.img_name}')
+        self.converted_image.save(f'image/result/{self.img_name}')
 
-        self.converted_image = self.__resize_image(self.converted_image)
-        self.converted_image = ImageTk.PhotoImage(self.converted_image)
-        self.image_label.config(image=self.converted_image)
+        self.converted_image_rescale = self.__resize_image(self.converted_image)
+        self.converted_image_rescale = ImageTk.PhotoImage(self.converted_image_rescale)
+        self.image_placeholder.config(image=self.converted_image_rescale)
 
-    def __resize_image(self, image: Image, max_len = 400):
-        x, y = image.size
-        image = image.resize(
-            (max_len, int(max_len * y / x)) if x > y else (int(max_len * x / y), max_len))
-        return image
-
-    def upload_image(self):
-        self.file_path = tk.filedialog.askopenfilename(
-            filetypes=[("Image files", "*.jpg *.jpeg *.png")],
-        )
-        if self.file_path:
-            self.upload_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-            self.uploaded_image = Image.open(self.file_path)
-
-            image_name, ext = self.file_path.split("/")[-1].split(".")
-            self.save_img(f'image/original/{image_name}-{self.upload_time}.{ext}', self.uploaded_image)
-
-            self.uploaded_image = self.__resize_image(self.uploaded_image)
-
-            self.uploaded_image = ImageTk.PhotoImage(self.uploaded_image)
-
-            self.image_label = tk.Label(self, image=self.uploaded_image)
-            self.image_label.grid(row=0, column=0)
-
-    def save_img(self, path, img):
-        img.save(path)
-
-        # # 이미지 로드
-        # self.before_image = Image.open("image/img1.jpg")
-        # img_w = self.before_image.width
-        # img_h = self.before_image.height
-        # ratio = img_w / img_h
-        #
-        # self.before_image = self.before_image.resize((810, int(810 / ratio)))
-        # self.before_image = ImageTk.PhotoImage(self.before_image)
-        #
-        # self.after_image = Image.open("image/img2.jpg")
-        # self.after_image = ImageTk.PhotoImage(self.after_image)
-        #
-        # self.image_label = tk.Label(self, image=self.before_image)
+    def __download_button_pressed(self):
+        save_path = tk.filedialog.asksaveasfilename(initialfile=self.img_name, filetypes=[("Image files", "*.jpg *.jpeg *.png")], defaultextension=".png", initialdir="downloads")
+        if save_path:
+            self.converted_image.save(save_path)

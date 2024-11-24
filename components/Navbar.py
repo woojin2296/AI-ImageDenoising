@@ -3,63 +3,126 @@ from PIL import Image, ImageTk
 
 class Navbar(tk.Frame):
     def __init__(self, root, switch_section_callback):
-        self.height = 606
-        self.width = 250
-        self.bg = "#26282A"
 
-        tk.Frame.__init__(self, root, bg=self.bg, height=self.height, width=self.width)
+        self.config = {
+            "height": 606,
+            "width": 250,
+            "bg": "#26282A",
+            "menu_hover_bg": "#33363A",
+            "separator_color": "#ffffff",
+            "text_color": "#ffffff"
+        }
+
+        tk.Frame.__init__(self, root, bg=self.config["bg"], height=self.config["height"], width=self.config["width"])
         self.grid_propagate(False)
         self.grid(row=0, column=0)
+        self.rowconfigure(40, weight=1)
 
         self.switch_section_callback = switch_section_callback
 
-        self.rowconfigure(40, weight=1)
+        self.icons = {}
+        self.load_icons()
 
         self.initUI()
 
+    def load_icons(self):
+        self.icons["house"] = ImageTk.PhotoImage(Image.open("./assets/house-white.png"))
+        self.icons["list"] = ImageTk.PhotoImage(Image.open("./assets/list-white.png"))
+
     def initUI(self):
-        self.setLogo(5, 0)
+        self.logo("Memory Mender").grid(row=0, column=0, padx=20, pady=20, sticky="w")
+        self.separator().grid(row=1, column=0)
 
-        self.setSeparator(9, 0, 250, 1)
+        self.set_menu(
+            row=15,
+            column=0,
+            icon=self.icons["house"],
+            text="Home",
+            command=lambda: self.switch_section_callback("Processing")
+        )
+        self.set_menu(
+            row=25,
+            column=0,
+            icon=self.icons["list"],
+            text="History",
+            command=lambda: self.switch_section_callback("History")
+        )
 
-        self.houseIcon = Image.open("./assets/house-white.png")
-        self.houseIcon = ImageTk.PhotoImage(self.houseIcon)
-        self.setMenu(15, 0, self.houseIcon, "Home", lambda: self.switch_section_callback("Processing"))
+        self.separator().grid(row=41, column=0)
+        self.set_footer("© 2024 Memory Mender", row=45, column=0)
 
-        self.listIcon = Image.open("./assets/list-white.png")
-        self.listIcon = ImageTk.PhotoImage(self.listIcon)
-        self.setMenu(25, 0, self.listIcon, "History", lambda: self.switch_section_callback("History"))
+    def logo(self, text):
+        return tk.Label(
+            self,
+            text=text,
+            fg=self.config["text_color"],
+            bg=self.config["bg"],
+            font=("Helvetica, 24")
+        )
+    def separator(self):
+        return tk.Frame(
+            self,
+            bg=self.config["separator_color"],
+            width=self.config["width"],
+            height=1
+        )
 
-        self.setSeparator(41, 0, 250, 1)
+    def set_menu(self, row, column, icon, text, command):
+        menu_frame = self.create_menu_frame(row, column)
+        icon_label, text_label = self.create_menu_content(menu_frame, icon, text)
 
-        self.setFooter(45, 0)
+        self.bind_menu_interaction(menu_frame, icon_label, text_label, command)
 
-    def setLogo(self, row, column):
-        logo = tk.Label(self, text="Memory Mender", fg="white", bg=self.bg, font=("Helvetica, 24"))
-        logo.grid(row=row, column=column, sticky="w", padx=20, pady=20)
+    def create_menu_frame(self, row, column):
+        menu_frame = tk.Frame(
+            self,
+            bg=self.config["bg"],
+            height=60,
+            width=self.config["width"]
+        )
+        menu_frame.grid_propagate(False)
+        menu_frame.grid(row=row, column=column)
+        menu_frame.grid_rowconfigure(0, weight=1)
+        return menu_frame
 
-    def setSeparator(self, row, column, width, height):
-        separator = tk.Frame(self, bg="#ffffff", width=width, height=height)
-        separator.grid(row=row, column=column)
-
-    def setMenu(self, row, column, icon, text, command):
-        menuFrame = tk.Frame(self, bg=self.bg, height=60, width=250)
-        menuFrame.grid_propagate(False)
-        menuFrame.grid(row=row, column=column)
-        menuFrame.grid_rowconfigure(0, weight=1)
-
-        icon_label = tk.Label(menuFrame, image=icon, bg=self.bg)
+    def create_menu_content(self, menu_frame, icon, text):
+        icon_label = tk.Label(menu_frame, image=icon, bg=self.config["bg"])
         icon_label.grid(row=0, column=0, padx=20, sticky="w")
 
-        text_label = tk.Label(menuFrame, text=text, fg="white", bg=self.bg, font=("Helvetica, 16"))
+        text_label = tk.Label(
+            menu_frame,
+            text=text,
+            fg=self.config["text_color"],
+            bg=self.config["bg"],
+            font=("Helvetica, 16")
+        )
         text_label.grid(row=0, column=1, sticky="w")
+        return icon_label, text_label
 
-        menuFrame.bind("<Enter>", lambda e: (menuFrame.config(bg="#33363A"), icon_label.config(bg="#33363A"), text_label.config(bg="#33363A")))
-        menuFrame.bind("<Leave>", lambda e: (menuFrame.config(bg=self.bg), icon_label.config(bg=self.bg), text_label.config(bg=self.bg)))
-        menuFrame.bind("<Button-1>", lambda e: command())
-        icon_label.bind("<Button-1>", lambda e: command())
-        text_label.bind("<Button-1>", lambda e: command())
+    def bind_menu_interaction(self, menu_frame, icon_label, text_label, command):
+        menu_frame.bind(
+            "<Enter>",
+            lambda e: self.change_menu_color(menu_frame, icon_label, text_label, self.config["menu_hover_bg"])
+        )
+        menu_frame.bind(
+            "<Leave>",
+            lambda e: self.change_menu_color(menu_frame, icon_label, text_label, self.config["bg"])
+        )
 
-    def setFooter(self, row, column):
-        footer = tk.Label(self, text="© 2021 Memory Mender", fg="white", bg=self.bg, font=("Helvetica, 10"))
+        for widget in [menu_frame, icon_label, text_label]:
+            widget.bind("<Button-1>", lambda e: command())
+
+    def change_menu_color(self, menu_frame, icon_label, text_label, color):
+        menu_frame.config(bg=color)
+        icon_label.config(bg=color)
+        text_label.config(bg=color)
+
+    def set_footer(self, text, row, column):
+        footer = tk.Label(
+            self,
+            text=text,
+            fg=self.config["text_color"],
+            bg=self.config["bg"],
+            font=("Helvetica, 10")
+        )
         footer.grid(row=row, column=column, sticky="s", padx=20, pady=20)
