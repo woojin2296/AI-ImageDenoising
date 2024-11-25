@@ -8,8 +8,7 @@ class Application(tk.Tk):
         self.geometry("1080x606-1920-600")
         self.resizable(False, False)
 
-        self.navbar = Navbar(self, switch_section_callback=self.show_section)
-        self.navbar.grid(row=0, column=0)
+        Navbar(self, switch_section_callback=self.show_section).grid(row=0, column=0)
 
         self.section_container = tk.Frame(self, height=606, width=830)
         self.section_container.grid(row=0, column=1)

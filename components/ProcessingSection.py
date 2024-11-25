@@ -5,7 +5,6 @@ from datetime import datetime
 
 from generate_denoise_image import generate_denoise_image
 
-
 class ProcessingSection(tk.Frame):
     def __init__(self, root):
         self.height = 606

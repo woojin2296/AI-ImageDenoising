@@ -86,11 +86,15 @@ class HistorySection(tk.Frame):
         name_label = tk.Label(card, text=path, fg="white", bg="#26282A", font=("Helvetica, 16"))
         name_label.grid(row=2, column=0, padx=10, pady=10, sticky="s")
 
-        image_label.bind("<Enter>", lambda e: (
+        card.bind("<Enter>", lambda e: (
             image_label.config(image=self.images[path][1]),
+            card.config(bg="#33363A"),
+            name_label.config(bg="#33363A")
         ))
-        image_label.bind("<Leave>", lambda e: (
+        card.bind("<Leave>", lambda e: (
             image_label.config(image=self.images[path][0]),
+            card.config(bg="#26282A"),
+            name_label.config(bg="#26282A")
         ))
 
 
