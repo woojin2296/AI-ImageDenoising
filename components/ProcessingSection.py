@@ -81,10 +81,10 @@ class ProcessingSection(tk.Frame):
 
     def __resize_image(self, image: Image):
         x, y = image.size
-        if x < y:
-            image = image.resize((self.image_section_width, int(self.image_section_width * y / x)))
+        if x > y:
+            image = image.resize((self.image_section_width-4, int((self.image_section_width-4) / x * y)))
         else:
-            image = image.resize((int(self.image_section_height * x / y), self.image_section_height))
+            image = image.resize((int((self.image_section_height-4) * x / y), self.image_section_height-4))
         return image
 
     def interface_section(self):
